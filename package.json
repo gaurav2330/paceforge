@@ -6,7 +6,8 @@
     "dev": "next dev -p 3091",
     "build": "next build",
     "start": "next start -p 3091",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
