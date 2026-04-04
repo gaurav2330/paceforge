@@ -5,10 +5,13 @@ import type { CreateExerciseInput, CreateSetInput } from "../../../types";
 const VALID_WEIGHT_UNITS = new Set(["kg", "lbs"]);
 
 export async function POST(request: NextRequest) {
+  console.log('[POST /api/workouts] received request');
   let body: unknown;
   try {
     body = await request.json();
+    console.log('[POST /api/workouts] body:', JSON.stringify(body, null, 2));
   } catch {
+    console.log('[POST /api/workouts] invalid JSON');
     return NextResponse.json(
       { error: "INVALID_JSON", message: "Request body must be valid JSON" },
       { status: 400 }
@@ -90,6 +93,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  console.log('[POST /api/workouts] validation passed, saving...');
   try {
     const workout = await createWorkout({
       date: b.date,
@@ -107,8 +111,10 @@ export async function POST(request: NextRequest) {
       }),
     });
 
+    console.log(`[POST /api/workouts] ✓ saved workout id=${workout.id}`);
     return NextResponse.json({ data: workout, success: true }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/workouts] ✗ DB error:', err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Failed to save workout" },
       { status: 500 }
@@ -117,10 +123,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  console.log('[GET /api/workouts] received request');
   try {
     const workouts = await getWorkouts();
+    console.log(`[GET /api/workouts] returning ${workouts.length} workouts`);
     return NextResponse.json({ data: workouts, success: true });
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/workouts] ✗ DB error:', err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Failed to fetch workouts" },
       { status: 500 }

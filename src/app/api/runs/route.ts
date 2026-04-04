@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     ...(point.accuracy !== undefined ? { accuracy: point.accuracy } : {}),
   }));
 
+  console.log(`[POST /api/runs] validation passed — distanceKm=${distanceKm}, durationSeconds=${durationSeconds}, points=${gpsPoints.length}`);
   try {
     const run = await createRun({
       distanceMeters: distanceKm * 1000,
@@ -78,8 +79,10 @@ export async function POST(request: NextRequest) {
         typeof b.elevationGain === "number" ? b.elevationGain : undefined,
     });
 
+    console.log(`[POST /api/runs] ✓ saved run id=${run.id}`);
     return NextResponse.json({ data: run, success: true }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/runs] ✗ DB error:', err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Failed to save run" },
       { status: 500 }
@@ -88,10 +91,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  console.log('[GET /api/runs] received request');
   try {
     const runs = await getRuns();
+    console.log(`[GET /api/runs] returning ${runs.length} runs`);
     return NextResponse.json({ data: runs, success: true });
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/runs] ✗ DB error:', err);
     return NextResponse.json(
       { error: "INTERNAL_ERROR", message: "Failed to fetch runs" },
       { status: 500 }
